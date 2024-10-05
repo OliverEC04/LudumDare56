@@ -63,14 +63,18 @@ export const Canvas: FC<Props> = (props) => {
 				const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
 				let closestHub = hubsArr[0];
 				let closestDistance = Math.pow(hubsArr[0].x - pos.x, 2) + Math.pow(hubsArr[1].y - pos.y, 2);
-				for (const hub of hubsArr){
+				let closestIndex = 0;
+				for (let i = 0; i < hubsArr.length; i++){
+					const hub = hubsArr[i];
 					const distance = Math.pow(hub.x - pos.x, 2) + Math.pow(hub.y - pos.y, 2);
 					if (distance < closestDistance) {
 						closestHub = hub;
 						closestDistance = distance;
+						closestIndex = i;
 					}
 				}
-				tunnels?.placementBegin(closestHub);
+				console.log(closestHub)
+				tunnels?.placementBegin(closestIndex, closestHub.x, closestHub.y);
 			});
 			canvas.addEventListener('mousemove', ev => {
 				const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);

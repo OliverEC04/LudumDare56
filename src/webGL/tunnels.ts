@@ -2,7 +2,6 @@ import {VertexArray} from "./vertexArray.ts";
 import {Shader} from "./shader.ts";
 import {Buffer} from "./buffer.ts";
 import {Placement, Tunnel, TunnelType} from "../models/tunnel.ts";
-import {Hub} from "../models/hub.ts";
 
 const vertexSource = `
     attribute float aOffset;
@@ -38,7 +37,7 @@ export class Tunnels{
     private readonly vao: VertexArray;
     private readonly shader: Shader;
     private readonly instanceBuffer: Buffer;
-    private startHub: Hub | null = null;
+    private startHub: number | null = null;
     private readonly placementTunnel: Float32Array;
     private instances: Array<number>;
 
@@ -72,11 +71,11 @@ export class Tunnels{
         this.setTunnels([]);
     }
 
-    public placementBegin(hub: Hub, size: number = 0.01){
+    public placementBegin(hub: number, x: number, y: number, size: number = 0.01){
         this.startHub = hub;
-        console.log(hub);
-        this.placementTunnel[0] = hub.x;
-        this.placementTunnel[1] = hub.y;
+        console.log(this.startHub);
+        this.placementTunnel[0] = x;
+        this.placementTunnel[1] = y;
         this.placementTunnel[4] = size;
         this.placementTunnel[5] = 0.4;
         this.placementTunnel[6] = 0.4;
@@ -91,11 +90,16 @@ export class Tunnels{
     }
 
     public placementEnd(): Placement | null{
-        if (!this.startHub){
+        if (this.startHub === null){
             return null;
             throw Error("Must call placementBegin first");
         }
-        const retVal = new Placement(this.startHub, this.placementTunnel[2], this.placementTunnel[3]);
+        const retVal = {
+            hub: this.startHub,
+            x: this.placementTunnel[2],
+            y: this.placementTunnel[3]
+        };
+
         this.startHub = null;
         this.placementTunnel.fill(0, 0, -1);
         this.instances.fill(0, 0, this.placementTunnel.length - 1);

@@ -1,6 +1,4 @@
-﻿import {Tunnel} from './tunnel.ts';
-
-export enum HubType {
+﻿export enum HubType {
 	none,
 	food,
 	mud,
@@ -14,7 +12,7 @@ export class Hub {
 	type: HubType;
 	size: number;
 	assignedTermites: number;
-	tunnels: Tunnel[];
+	tunnels: number[];
 
 	// visited: boolean;
 
@@ -32,9 +30,5 @@ export class Hub {
 		this.assignedTermites = assignedTermites;
 		this.tunnels = [];
 		// this.visited = false;
-	}
-
-	public AddTunnel(tunnel: Tunnel){
-		this.tunnels.push(tunnel);
 	}
 }

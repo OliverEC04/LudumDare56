@@ -6,19 +6,10 @@ export enum TunnelType {
     feces
 }
 
-export class Placement{
-    public hub: Hub;
-    public y: number;
-    public x: number;
-
-    constructor(hub: Hub, y: number, x: number) {
-        this.hub = hub;
-        this.y = y;
-        this.x = x;
-    }
-}
+export type Placement = { hub: number, y: number, x: number};
 
 export class Tunnel {
+    public id: number;
     public begin: Hub;
     public end: Hub;
     public damage: number[];
@@ -26,17 +17,19 @@ export class Tunnel {
     public enabled: boolean;
 
     constructor(
+        id: number,
         begin: Hub,
         end: Hub,
         damage: number[],
         type: TunnelType
     ) {
+        this.id = id;
         this.begin = begin;
         this.end = end;
         this.damage = damage;
         this.type = type;
         this.enabled = true;
-        this.begin.AddTunnel(this);
-        this.end.AddTunnel(this);
+        this.begin.tunnels.push(this.id);
+        this.end.tunnels.push(this.id);
     }
 }
