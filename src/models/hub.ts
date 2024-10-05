@@ -1,6 +1,6 @@
 ﻿import {Tunnel} from './tunnel.ts';
 
-export enum NodeType {
+export enum HubType {
 	none,
 	food,
 	mud,
@@ -8,10 +8,10 @@ export enum NodeType {
 	home
 }
 
-export class Node {
+export class Hub {
 	x: number;
 	y: number;
-	type: NodeType;
+	type: HubType;
 	size: number;
 	assignedTermites: number;
 	tunnels: Tunnel[];
@@ -21,17 +21,20 @@ export class Node {
 	constructor(
 		x: number,
 		y: number,
-		type: NodeType,
+		type: HubType,
 		size: number,
 		assignedTermites: number,
-		tunnels: Tunnel[],
 	) {
 		this.x = x;
 		this.y = y;
 		this.type = type;
 		this.size = size;
 		this.assignedTermites = assignedTermites;
-		this.tunnels = tunnels;
+		this.tunnels = [];
 		// this.visited = false;
+	}
+
+	public AddTunnel(tunnel: Tunnel){
+		this.tunnels.push(tunnel);
 	}
 }

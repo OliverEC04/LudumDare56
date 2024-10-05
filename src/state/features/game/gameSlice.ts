@@ -1,45 +1,33 @@
 ﻿import {createSlice} from '@reduxjs/toolkit';
-import {Node, NodeType} from '../../../models/node.ts';
-import {Tunnel} from '../../../models/tunnel.ts';
+import {Hub, HubType} from '../../../models/hub.ts';
+import {Tunnel, TunnelType} from '../../../models/tunnel.ts';
 
 interface GameState {
-	nodes: Node[];
+	hubs: Hub[];
 	tunnels: Tunnel[];
-	home: Node;
-	targetNode: Node | null;
+	home: Hub;
 	termites: number;
 }
 
+const home = new Hub(0, 0, HubType.home, 10, 0);
+const food = new Hub(1, 1, HubType.food, 10, 0);
+const none = new Hub(0.25, 0.5, HubType.none, 0, 0);
+
+const tunnel1 = new Tunnel(home, none, [0, 1, 2, 3], TunnelType.dug);
+const tunnel2 = new Tunnel(none, food, [0, 1, 2, 3], TunnelType.dug);
+
 const initialState: GameState = {
-	nodes: [],
-	tunnels: [],
-	home: new Node(0, 0, NodeType.home, 1, 0, []),
-	targetNode: null,
-	termites: 10,
+	hubs: [home, food, none],
+	tunnels: [tunnel1, tunnel2],
+	home: home,
+	termites: 0,
 };
 
 export const gameSlice = createSlice({
 	name: 'game',
 	initialState,
 	reducers: {
-		update: (state) => {
-			state.termites = state.termites * 1.1;
-		},
-		updateGraph: (state) => {
-			const placeTermites = (startNode: Node) => {
-				if (startNode.assignedTermites < startNode.size) return;
-			};
-
-			state.home.tunnels
-				.sort((a, b) => a.size - b.size)
-				.forEach(tunnel => {
-					placeTermites(tunnel.end);
-					return tunnel;
-				});
-		},
 	},
 });
-
-export const {update} = gameSlice.actions;
 
 export default gameSlice.reducer;

@@ -1,22 +1,38 @@
 import {FC, useEffect, useRef} from 'react';
 import {Tunnels} from '../../webGL/tunnels.ts';
 import {Hubs} from "../../webGL/hubs.ts";
+import {useAppSelector} from "../../state/hooks.ts";
 
 interface Props {
 	width: number;
 	height: number;
 }
 
-function convertMouseCoordsToWorld(canvas: HTMLCanvasElement, x: number, y: number) {
-	const rect = canvas.getBoundingClientRect();
-	return {x: (x - rect.left) / canvas.width * 2 - 1, y: 1 - (y - rect.top) / canvas.height * 2};
-}
+// function convertMouseCoordsToWorld(canvas: HTMLCanvasElement, x: number, y: number) {
+// 	const rect = canvas.getBoundingClientRect();
+// 	return {x: (x - rect.left) / canvas.width * 2 - 1, y: 1 - (y - rect.top) / canvas.height * 2};
+// }
 
 export const Canvas: FC<Props> = (props) => {
 	const {width, height} = props;
+	// const dispatch = useAppDispatch();
+	const {tunnels: tunnelsArr, hubs: hubsArr} = useAppSelector(state => state.game)
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const tunnelsRef = useRef<Tunnels | null>(null);
 	const hubsRef = useRef<Hubs | null>(null);
+
+	useEffect(() => {
+		const tunnels = tunnelsRef.current;
+		if (tunnels){
+			tunnels.setTunnels(tunnelsArr);
+		}
+	}, [tunnelsArr, tunnelsRef]);
+	useEffect(() => {
+		const hubs = hubsRef.current;
+		if (hubs){
+			hubs.setHubs(hubsArr)
+		}
+	}, [hubsArr, hubsRef]);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -39,21 +55,18 @@ export const Canvas: FC<Props> = (props) => {
 
 			gl.viewport(0, 0, width, height);
 			gl.clearColor(0.0, 0.0, 0.0, 1.0);
+			gl.enable(gl.BLEND);
+			gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-			canvas.addEventListener('mouseup', ev => {
-				const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
-				hubs?.addHub(pos.x, pos.y, 0.04);
-				tunnels?.placementEnd();
-			});
-			canvas.addEventListener('mousedown', ev => {
-				const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
-				tunnels?.beginPlacement(pos.x, pos.y);
-				hubs?.addHub(pos.x, pos.y, 0.04);
-			});
-			canvas.addEventListener('mousemove', ev => {
-				const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
-				tunnels?.placementUpdate(pos.x, pos.y);
-			});
+			// canvas.addEventListener('mouseup', ev => {
+			// 	const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
+			// });
+			// canvas.addEventListener('mousedown', ev => {
+			// 	const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
+			// });
+			// canvas.addEventListener('mousemove', ev => {
+			// 	const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
+			// });
 
 			const renderFrame = () => {
 				gl.clear(gl.COLOR_BUFFER_BIT);

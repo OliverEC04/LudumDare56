@@ -1,6 +1,7 @@
 import {VertexArray} from "./vertexArray.ts";
 import {Shader} from "./shader.ts";
 import {Buffer} from "./buffer.ts";
+import {Tunnel, TunnelType} from "../models/tunnel.ts";
 
 const vertexSource = `
     attribute float aOffset;
@@ -37,7 +38,7 @@ export class Tunnels{
     private readonly shader: Shader;
     private readonly instanceBuffer: Buffer;
     private readonly placementTunnel: Float32Array;
-    private readonly instances: Array<number>;
+    private instances: Array<number>;
 
     constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
@@ -58,14 +59,15 @@ export class Tunnels{
         this.vao.addAttribute(vbo, "aOffset", 1, this.gl.FLOAT, 8, 0);
         this.vao.addAttribute(vbo, "aPoint", 1, this.gl.FLOAT, 8, 4);
 
-        this.instances = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        this.instances = [];
         this.placementTunnel = new Float32Array(9);
         this.instanceBuffer = new Buffer(this.gl, this.gl.ARRAY_BUFFER);
-        this.instanceBuffer.setData(this.placementTunnel, this.gl.DYNAMIC_DRAW);
         this.vao.addAttribute(this.instanceBuffer, "aBegin", 2, this.gl.FLOAT, 36, 0, 1);
         this.vao.addAttribute(this.instanceBuffer, "aEnd", 2, this.gl.FLOAT, 36, 8, 1);
         this.vao.addAttribute(this.instanceBuffer, "aSize", 1, this.gl.FLOAT, 36, 16, 1);
         this.vao.addAttribute(this.instanceBuffer, "aColor", 4, this.gl.FLOAT, 36, 20, 1);
+
+        this.setTunnels([]);
     }
 
     public beginPlacement(x: number, y: number, size: number = 0.01){
@@ -94,6 +96,40 @@ export class Tunnels{
         }
         this.placementTunnel[4] = 0;
 
+        this.instanceBuffer.setData(new Float32Array(this.instances), this.gl.DYNAMIC_DRAW);
+    }
+
+    public setTunnels(tunnels: Tunnel[]){
+        this.instances = new Array<number>(9);
+        for (const tunnel of tunnels){
+            const beginX = tunnel.begin.x;
+            const beginY = tunnel.begin.y;
+            const endX = tunnel.end.x;
+            const endY = tunnel.end.y;
+            let size = 0;
+            let r = 0, g = 0, b = 0;
+            switch (tunnel.type){
+                case TunnelType.dug:
+                    size = 0.01;
+                    r = 0.8;
+                    g = 0.4;
+                    b = 0.1;
+                    break;
+                case TunnelType.mud:
+                    size = 0.02;
+                    r = 0.7;
+                    g = 0.4;
+                    b = 0.1;
+                    break;
+                case TunnelType.feces:
+                    size = 0.03;
+                    r = 0.6;
+                    g = 0.3;
+                    b = 0.1;
+                    break;
+            }
+            this.instances.push(beginX, beginY, endX, endY, size, r, g, b, 1)
+        }
         this.instanceBuffer.setData(new Float32Array(this.instances), this.gl.DYNAMIC_DRAW);
     }
 

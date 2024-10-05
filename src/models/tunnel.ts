@@ -1,4 +1,4 @@
-﻿import {Node} from "./node.ts";
+﻿import {Hub} from "./hub.ts";
 
 export enum TunnelType {
     dug,
@@ -7,26 +7,24 @@ export enum TunnelType {
 }
 
 export class Tunnel {
-    begin: Node;
-    end: Node;
+    begin: Hub;
+    end: Hub;
     damage: number[];
-    size: number;
     type: TunnelType;
     enabled: boolean;
 
     constructor(
-        begin: Node,
-        end: Node,
+        begin: Hub,
+        end: Hub,
         damage: number[],
-        size: number,
-        type: TunnelType,
-        enabled: boolean
+        type: TunnelType
     ) {
         this.begin = begin;
         this.end = end;
         this.damage = damage;
-        this.size = size;
         this.type = type;
-        this.enabled = enabled;
+        this.enabled = true;
+        this.begin.AddTunnel(this);
+        this.end.AddTunnel(this);
     }
 }
