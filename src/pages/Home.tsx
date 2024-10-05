@@ -1,6 +1,7 @@
 import {Box, Button, SxProps, TextField} from '@mui/material';
 import {useAppDispatch, useAppSelector} from '../state/hooks.ts';
 import {decrement, increment, setValue} from '../state/features/counter/counterSlice.ts';
+import {Canvas} from "../components/canvas/Canvas.tsx";
 
 export const Home = () => {
 	const dispatch = useAppDispatch();
@@ -26,6 +27,7 @@ export const Home = () => {
 				onClick={() => {
 					dispatch(increment());
 				}}>+</Button>
+			<Canvas width={500} height={500}></Canvas>
 		</Box>
 	);
 };
