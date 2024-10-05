@@ -2,7 +2,7 @@
 import {BottomBarButton} from './BottomBarButton.tsx';
 import testIcon from '../../assets/testIcon.png';
 import {Game, Tool} from '../../logic/game.ts';
-import {FC, useCallback} from 'react';
+import {FC, useCallback, useState} from 'react';
 
 interface Props {
 	game: Game;
@@ -11,19 +11,20 @@ interface Props {
 export const BottomBar: FC<Props> = (props) => {
 	const {game} = props;
 
-	const setTool = useCallback((tool: Tool) => {
-		if (game.selectedTool === tool) {
-			game.selectTool(Tool.None);
-			return;
-		}
+	const [selectedTool, setSelectedTool] = useState<Tool>(Tool.None);
 
-		game.selectTool(tool);
+	const setTool = useCallback((tool: Tool) => {
+		const newTool = game.selectedTool === tool ? Tool.None : tool;
+		setSelectedTool(newTool);
+		game.selectTool(newTool);
 	}, [game]);
 
 	return (
 		<Paper sx={styles.container}>
-			<BottomBarButton label="digTunnel" icon={testIcon} onclick={() => setTool(Tool.DigTunnel)}/>
-			<BottomBarButton label="upgradeTunnel" icon={testIcon} onclick={() => setTool(Tool.UpgradeTunnel)}/>
+			<BottomBarButton label="digTunnel" icon={testIcon} active={selectedTool === Tool.DigTunnel}
+							 onclick={() => setTool(Tool.DigTunnel)}/>
+			<BottomBarButton label="upgradeTunnel" icon={testIcon} active={selectedTool === Tool.UpgradeTunnel}
+							 onclick={() => setTool(Tool.UpgradeTunnel)}/>
 		</Paper>
 	);
 };

@@ -4,15 +4,17 @@ import {FC} from 'react';
 interface Props {
 	label: string;
 	icon: string;
+	active?: boolean;
 
 	onclick(): void;
 }
 
 export const BottomBarButton: FC<Props> = (props) => {
-	const {label, icon, onclick} = props;
+	const {label, icon, active = false, onclick} = props;
 
 	return (
-		<Button sx={styles.button} aria-label={label} onClick={onclick}>
+		<Button sx={{...styles.button, backgroundColor: active ? '#f0f0f040' : 'none'} as SxProps} aria-label={label}
+				onClick={onclick}>
 			<Box component="img" src={icon} alt={label} sx={styles.img}/>
 		</Button>
 	);
