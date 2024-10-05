@@ -1,11 +1,18 @@
 ﻿import {Tunnel, TunnelType} from '../models/tunnel.ts';
 import {Hub, HubType} from '../models/hub.ts';
 
+export enum Tool {
+	None,
+	DigTunnel,
+	UpgradeTunnel,
+}
+
 export class Game extends EventTarget {
 	hubs: Hub[];
 	tunnels: Tunnel[];
 	home: Hub;
 	termites: number;
+	selectedTool: Tool;
 
 	constructor() {
 		super();
@@ -13,6 +20,7 @@ export class Game extends EventTarget {
 		this.tunnels = [];
 		this.home = new Hub(0, 0, HubType.home, 0, 10);
 		this.termites = 10;
+		this.selectedTool = Tool.None;
 
 		const home = this.addHub(0, 0, HubType.home, 10, 0);
 		const food = this.addHub(1, 1, HubType.food, 10, 0);
@@ -43,5 +51,9 @@ export class Game extends EventTarget {
 
 		super.dispatchEvent(new CustomEvent("addedHub", {detail: {"hub": hub, "allHubs": this.hubs}}));
 		return hub;
+	}
+
+	public selectTool(tool: Tool) {
+		this.selectedTool = tool;
 	}
 }
