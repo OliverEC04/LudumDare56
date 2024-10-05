@@ -6,12 +6,24 @@ export enum TunnelType {
     feces
 }
 
+export class Placement{
+    public hub: Hub;
+    public y: number;
+    public x: number;
+
+    constructor(hub: Hub, y: number, x: number) {
+        this.hub = hub;
+        this.y = y;
+        this.x = x;
+    }
+}
+
 export class Tunnel {
-    begin: Hub;
-    end: Hub;
-    damage: number[];
-    type: TunnelType;
-    enabled: boolean;
+    public begin: Hub;
+    public end: Hub;
+    public damage: number[];
+    public type: TunnelType;
+    public enabled: boolean;
 
     constructor(
         begin: Hub,

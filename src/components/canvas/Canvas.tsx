@@ -1,21 +1,22 @@
 import {FC, useEffect, useRef} from 'react';
 import {Tunnels} from '../../webGL/tunnels.ts';
 import {Hubs} from "../../webGL/hubs.ts";
-import {useAppSelector} from "../../state/hooks.ts";
+import {useAppDispatch, useAppSelector} from "../../state/hooks.ts";
+import {addTunnel} from "../../state/features/game/gameSlice.ts";
 
 interface Props {
 	width: number;
 	height: number;
 }
 
-// function convertMouseCoordsToWorld(canvas: HTMLCanvasElement, x: number, y: number) {
-// 	const rect = canvas.getBoundingClientRect();
-// 	return {x: (x - rect.left) / canvas.width * 2 - 1, y: 1 - (y - rect.top) / canvas.height * 2};
-// }
+function convertMouseCoordsToWorld(canvas: HTMLCanvasElement, x: number, y: number) {
+	const rect = canvas.getBoundingClientRect();
+	return {x: (x - rect.left) / canvas.width * 2 - 1, y: 1 - (y - rect.top) / canvas.height * 2};
+}
 
 export const Canvas: FC<Props> = (props) => {
 	const {width, height} = props;
-	// const dispatch = useAppDispatch();
+	const dispatch = useAppDispatch();
 	const {tunnels: tunnelsArr, hubs: hubsArr} = useAppSelector(state => state.game)
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const tunnelsRef = useRef<Tunnels | null>(null);
@@ -58,15 +59,31 @@ export const Canvas: FC<Props> = (props) => {
 			gl.enable(gl.BLEND);
 			gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-			// canvas.addEventListener('mouseup', ev => {
-			// 	const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
-			// });
-			// canvas.addEventListener('mousedown', ev => {
-			// 	const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
-			// });
-			// canvas.addEventListener('mousemove', ev => {
-			// 	const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
-			// });
+			canvas.addEventListener('mousedown', ev => {
+				const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
+				let closestHub = hubsArr[0];
+				let closestDistance = Math.pow(hubsArr[0].x - pos.x, 2) + Math.pow(hubsArr[1].y - pos.y, 2);
+				for (const hub of hubsArr){
+					const distance = Math.pow(hub.x - pos.x, 2) + Math.pow(hub.y - pos.y, 2);
+					if (distance < closestDistance) {
+						closestHub = hub;
+						closestDistance = distance;
+					}
+				}
+				tunnels?.placementBegin(closestHub);
+			});
+			canvas.addEventListener('mousemove', ev => {
+				const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
+				tunnels?.placementUpdate(pos.x, pos.y);
+			});
+			canvas.addEventListener('mouseup', () => {
+				// const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
+				const placement = tunnels?.placementEnd();
+				if (placement){
+					console.log(placement);
+					dispatch(addTunnel(placement));
+				}
+			});
 
 			const renderFrame = () => {
 				gl.clear(gl.COLOR_BUFFER_BIT);

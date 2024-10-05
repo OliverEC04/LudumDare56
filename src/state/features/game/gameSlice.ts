@@ -1,6 +1,6 @@
-﻿import {createSlice} from '@reduxjs/toolkit';
+﻿import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Hub, HubType} from '../../../models/hub.ts';
-import {Tunnel, TunnelType} from '../../../models/tunnel.ts';
+import {Placement, Tunnel, TunnelType} from '../../../models/tunnel.ts';
 
 interface GameState {
 	hubs: Hub[];
@@ -27,7 +27,15 @@ export const gameSlice = createSlice({
 	name: 'game',
 	initialState,
 	reducers: {
+        addTunnel: (state, action: PayloadAction<Placement>) => {
+            const placement = action.payload;
+            const hub = new Hub(placement.x, placement.y, HubType.none, 0, 0);
+            state.tunnels.push(new Tunnel(placement.hub, hub, [], TunnelType.dug));
+            state.hubs.push(hub);
+        },
 	},
 });
+
+export const {addTunnel} = gameSlice.actions;
 
 export default gameSlice.reducer;

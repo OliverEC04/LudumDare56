@@ -1,7 +1,8 @@
 import {VertexArray} from "./vertexArray.ts";
 import {Shader} from "./shader.ts";
 import {Buffer} from "./buffer.ts";
-import {Tunnel, TunnelType} from "../models/tunnel.ts";
+import {Placement, Tunnel, TunnelType} from "../models/tunnel.ts";
+import {Hub} from "../models/hub.ts";
 
 const vertexSource = `
     attribute float aOffset;
@@ -37,6 +38,7 @@ export class Tunnels{
     private readonly vao: VertexArray;
     private readonly shader: Shader;
     private readonly instanceBuffer: Buffer;
+    private startHub: Hub | null = null;
     private readonly placementTunnel: Float32Array;
     private instances: Array<number>;
 
@@ -70,9 +72,11 @@ export class Tunnels{
         this.setTunnels([]);
     }
 
-    public beginPlacement(x: number, y: number, size: number = 0.01){
-        this.placementTunnel[0] = x;
-        this.placementTunnel[1] = y;
+    public placementBegin(hub: Hub, size: number = 0.01){
+        this.startHub = hub;
+        console.log(hub);
+        this.placementTunnel[0] = hub.x;
+        this.placementTunnel[1] = hub.y;
         this.placementTunnel[4] = size;
         this.placementTunnel[5] = 0.4;
         this.placementTunnel[6] = 0.4;
@@ -86,17 +90,17 @@ export class Tunnels{
         this.instanceBuffer.setSubData(new Float32Array(this.placementTunnel), 0);
     }
 
-    public placementEnd(){
-        this.placementTunnel[5] = 0.8;
-        this.placementTunnel[6] = 0.4;
-        this.placementTunnel[7] = 0.1;
-        this.placementTunnel[8] = 1;
-        for (const f of this.placementTunnel){
-            this.instances.push(f);
+    public placementEnd(): Placement | null{
+        if (!this.startHub){
+            return null;
+            throw Error("Must call placementBegin first");
         }
-        this.placementTunnel[4] = 0;
-
-        this.instanceBuffer.setData(new Float32Array(this.instances), this.gl.DYNAMIC_DRAW);
+        const retVal = new Placement(this.startHub, this.placementTunnel[2], this.placementTunnel[3]);
+        this.startHub = null;
+        this.placementTunnel.fill(0, 0, -1);
+        this.instances.fill(0, 0, this.placementTunnel.length - 1);
+        this.instanceBuffer.setSubData(new Float32Array(this.placementTunnel), 0);
+        return retVal;
     }
 
     public setTunnels(tunnels: Tunnel[]){
