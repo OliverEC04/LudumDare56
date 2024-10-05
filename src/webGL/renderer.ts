@@ -1,10 +1,12 @@
 import {Game} from "../logic/game.ts";
 import {Hubs} from "./hubs.ts";
 import {Tunnels} from "./tunnels.ts";
-import {HubType} from "../models/hub.ts";
+import {Hub, HubType} from "../models/hub.ts";
 import {TunnelType} from "../models/tunnel.ts";
 
 export class Renderer{
+    private readonly hubSnap: number = 0.02;
+
     private readonly gl: WebGL2RenderingContext;
     private readonly canvas: HTMLCanvasElement;
     private readonly game: Game;
@@ -25,7 +27,9 @@ export class Renderer{
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 
         this.tunnels = new Tunnels(this.gl);
+        this.tunnels.setTunnels(this.game.tunnels);
         this.hubs = new Hubs(this.gl);
+        this.hubs.setHubs(this.game.hubs);
 
         this.game.addEventListener('addedTunnel', this.onAddedTunnel.bind(this));
         this.game.addEventListener('addedHub', this.onAddedHub.bind(this));
@@ -34,6 +38,9 @@ export class Renderer{
         this.canvas.addEventListener("mousedown", this.mouseDown.bind(this));
         this.canvas.addEventListener("mousemove", this.mouseMove.bind(this));
         this.canvas.addEventListener("mouseup", this.mouseUp.bind(this));
+        this.canvas.addEventListener("contextmenu", ev => {
+            ev.preventDefault();
+        }, true)
     }
 
     public resize(width: number, height: number){
@@ -65,31 +72,47 @@ export class Renderer{
         return {x: (x - rect.left) / this.canvas.width * 2 - 1, y: 1 - (y - rect.top) / this.canvas.height * 2};
     }
 
-    private mouseDown(ev: MouseEvent){
-        const pos = this.convertMouseCoordsToWorld(ev.clientX, ev.clientY);
-        let closestHub = this.game.hubs[0];
-        let closestDistance = Math.pow(this.game.hubs[0].x - pos.x, 2) + Math.pow(this.game.hubs[1].y - pos.y, 2);
+    private nearestHub(x: number, y: number, maxDistance: number): Hub | null {
+        let closestHub: Hub | null = null;
+        let closestDistance = maxDistance;
         for (let i = 0; i < this.game.hubs.length; i++) {
             const hub = this.game.hubs[i];
-            const distance = Math.pow(hub.x - pos.x, 2) + Math.pow(hub.y - pos.y, 2);
+            const distance = Math.pow(hub.x - x, 2) + Math.pow(hub.y - y, 2);
             if (distance < closestDistance) {
                 closestHub = hub;
                 closestDistance = distance;
             }
         }
-        this.tunnels?.placementBegin(closestHub);
+        return closestHub;
+    }
+
+    private mouseDown(ev: MouseEvent){
+        const pos = this.convertMouseCoordsToWorld(ev.clientX, ev.clientY);
+        const hub = this.nearestHub(pos.x, pos.y, this.hubSnap);
+        if (hub) {
+            this.tunnels?.placementBegin(hub);
+        }
     }
 
     private mouseMove(ev: MouseEvent){
         const pos = this.convertMouseCoordsToWorld(ev.clientX, ev.clientY);
-        this.tunnels?.placementUpdate(pos.x, pos.y);
+        const hub = this.nearestHub(pos.x, pos.y, this.hubSnap);
+        if (hub){
+            this.tunnels?.placementUpdate(hub.x, hub.y);
+        }
+        else{
+            this.tunnels?.placementUpdate(pos.x, pos.y);
+        }
     }
 
-    private mouseUp() {
-        // const pos = this.convertMouseCoordsToWorld(ev.clientX, ev.clientY);
+    private mouseUp(ev: MouseEvent) {
+        const pos = this.convertMouseCoordsToWorld(ev.clientX, ev.clientY);
         const placement = this.tunnels?.placementEnd();
         if (placement) {
-            const hub = this.game.addHub(placement.x, placement.y, HubType.none, 1, 0);
+            let hub = this.nearestHub(pos.x, pos.y, this.hubSnap);
+            if (!hub) {
+                hub = this.game.addHub(placement.x, placement.y, HubType.none, 1, 0);
+            }
             this.game.addTunnel(placement.hub, hub, TunnelType.dug);
         }
     }

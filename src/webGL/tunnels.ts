@@ -90,9 +90,9 @@ export class Tunnels {
 		this.instanceBuffer.setSubData(new Float32Array(this.placementTunnel), 0);
 	}
 
-	public placementEnd(): { hub: Hub, x: number, y: number } {
+	public placementEnd(): { hub: Hub, x: number, y: number } | null {
 		if (this.startHub === null) {
-			throw Error('Must call placementBegin first');
+			return null;
 		}
 		const retVal = {
 			hub: this.startHub,
