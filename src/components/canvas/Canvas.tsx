@@ -1,12 +1,14 @@
 import {FC, useEffect, useRef} from 'react';
 import {Tunnels} from '../../webGL/tunnels.ts';
-import {Hubs} from "../../webGL/hubs.ts";
-import {useAppDispatch, useAppSelector} from "../../state/hooks.ts";
-import {addTunnel} from "../../state/features/game/gameSlice.ts";
+import {Hubs} from '../../webGL/hubs.ts';
+import {Game} from '../../logic/game.ts';
+import {HubType} from '../../models/hub.ts';
+import {TunnelType} from '../../models/tunnel.ts';
 
 interface Props {
 	width: number;
 	height: number;
+	game: Game;
 }
 
 function convertMouseCoordsToWorld(canvas: HTMLCanvasElement, x: number, y: number) {
@@ -15,25 +17,24 @@ function convertMouseCoordsToWorld(canvas: HTMLCanvasElement, x: number, y: numb
 }
 
 export const Canvas: FC<Props> = (props) => {
-	const {width, height} = props;
-	const dispatch = useAppDispatch();
-	const {tunnels: tunnelsArr, hubs: hubsArr} = useAppSelector(state => state.game)
+	const {width, height, game} = props;
+
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const tunnelsRef = useRef<Tunnels | null>(null);
 	const hubsRef = useRef<Hubs | null>(null);
 
-	useEffect(() => {
+	game.addEventListener('addedTunnel', () => {
 		const tunnels = tunnelsRef.current;
-		if (tunnels){
-			tunnels.setTunnels(tunnelsArr);
+		if (tunnels) {
+			tunnels.setTunnels(game.tunnels);
 		}
-	}, [tunnelsArr, tunnelsRef]);
-	useEffect(() => {
+	});
+	game.addEventListener('addedHub', () => {
 		const hubs = hubsRef.current;
-		if (hubs){
-			hubs.setHubs(hubsArr)
+		if (hubs) {
+			hubs.setHubs(game.hubs);
 		}
-	}, [hubsArr, hubsRef]);
+	});
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -49,7 +50,7 @@ export const Canvas: FC<Props> = (props) => {
 				tunnelsRef.current = tunnels;
 			}
 			let hubs = hubsRef.current;
-			if (!hubs){
+			if (!hubs) {
 				hubs = new Hubs(gl);
 				hubsRef.current = hubs;
 			}
@@ -61,20 +62,17 @@ export const Canvas: FC<Props> = (props) => {
 
 			canvas.addEventListener('mousedown', ev => {
 				const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
-				let closestHub = hubsArr[0];
-				let closestDistance = Math.pow(hubsArr[0].x - pos.x, 2) + Math.pow(hubsArr[1].y - pos.y, 2);
-				let closestIndex = 0;
-				for (let i = 0; i < hubsArr.length; i++){
-					const hub = hubsArr[i];
+				let closestHub = game.hubs[0];
+				let closestDistance = Math.pow(game.hubs[0].x - pos.x, 2) + Math.pow(game.hubs[1].y - pos.y, 2);
+				for (let i = 0; i < game.hubs.length; i++) {
+					const hub = game.hubs[i];
 					const distance = Math.pow(hub.x - pos.x, 2) + Math.pow(hub.y - pos.y, 2);
 					if (distance < closestDistance) {
 						closestHub = hub;
 						closestDistance = distance;
-						closestIndex = i;
 					}
 				}
-				console.log(closestHub)
-				tunnels?.placementBegin(closestIndex, closestHub.x, closestHub.y);
+				tunnels?.placementBegin(closestHub);
 			});
 			canvas.addEventListener('mousemove', ev => {
 				const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
@@ -83,9 +81,9 @@ export const Canvas: FC<Props> = (props) => {
 			canvas.addEventListener('mouseup', () => {
 				// const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
 				const placement = tunnels?.placementEnd();
-				if (placement){
-					console.log(placement);
-					dispatch(addTunnel(placement));
+				if (placement) {
+					const hub = game.addHub(placement.x, placement.y, HubType.none, 1, 0);
+					game.addTunnel(placement.hub, hub, TunnelType.dug);
 				}
 			});
 
@@ -106,6 +104,7 @@ export const Canvas: FC<Props> = (props) => {
 			requestAnimationFrame(renderFrame);
 		}
 	}, [width, height]);
+
 	return (
 		<canvas ref={canvasRef}
 				width={width}

@@ -1,13 +1,18 @@
 ﻿import {Paper, SxProps} from '@mui/material';
 import {TopBarTile} from './TopBarTile.tsx';
-import {useAppSelector} from '../../state/hooks.ts';
+import {Game} from '../../logic/game.ts';
+import {FC} from 'react';
 
-export const TopBar = () => {
-	const {termites} = useAppSelector((state) => state.game);
+interface Props {
+	game: Game;
+}
+
+export const TopBar: FC<Props> = (props) => {
+	const {game} = props;
 
 	return (
 		<Paper sx={styles.container}>
-			<TopBarTile label="Termites" value={termites}/>
+			<TopBarTile label="Termites" value={game.termites}/>
 		</Paper>
 	);
 };
@@ -15,5 +20,9 @@ export const TopBar = () => {
 const styles: { [key: string]: SxProps } = {
 	container: {
 		position: 'absolute',
+		backgroundColor: '#f0f0f040',
+		color: '#ffffffe0',
+		gap: 1,
+		padding: 1,
 	},
 };

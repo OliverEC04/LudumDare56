@@ -3,14 +3,17 @@ import {Canvas} from '../components/canvas/Canvas.tsx';
 import {BottomBar} from '../components/bottomBar/BottomBar.tsx';
 import {useWindowSize} from '../state/hooks/windowSize.tsx';
 import {TopBar} from '../components/topBar/TopBar.tsx';
+import {Game} from '../logic/game.ts';
 
 export const Home = () => {
 	const {width: windowWidth, height: windowHeight} = useWindowSize();
 
+	const game = new Game();
+
 	return (
 		<Box sx={styles.container}>
-			<TopBar/>
-			<Canvas width={windowWidth} height={windowHeight}></Canvas>
+			<TopBar game={game}/>
+			<Canvas width={windowWidth} height={windowHeight} game={game}></Canvas>
 			<BottomBar/>
 		</Box>
 	);

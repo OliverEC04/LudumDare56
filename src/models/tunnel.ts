@@ -1,29 +1,27 @@
-﻿import {Hub} from "./hub.ts";
+﻿import {Hub} from './hub.ts';
 
 export enum TunnelType {
-    dug,
-    mud,
-    feces
+	dug,
+	mud,
+	feces
 }
 
-export type Placement = { hub: number, y: number, x: number};
+export class Tunnel {
+	begin: Hub;
+	end: Hub;
+	type: TunnelType;
+	enabled: boolean;
 
-export type Tunnel = {
-    id: number,
-    begin: Hub,
-    end: Hub,
-    damage: number[],
-    type: TunnelType,
-    enabled: boolean,
-}
-
-export function createTunnel(id: number, begin: Hub, end: Hub, damage: number[], type: TunnelType): Tunnel{
-    return {
-        id: id,
-        begin: begin,
-        end: end,
-        damage: damage,
-        type: type,
-        enabled: true,
-    }
+	constructor(
+		begin: Hub,
+		end: Hub,
+		type: TunnelType,
+	) {
+		this.begin = begin;
+		this.end = end;
+		this.type = type;
+		this.enabled = true;
+		this.begin.addTunnel(this);
+		this.end.addTunnel(this);
+	}
 }
