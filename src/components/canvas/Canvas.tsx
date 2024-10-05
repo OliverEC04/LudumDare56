@@ -7,10 +7,15 @@ interface Props
     height: number;
 }
 
+function convertMouseCoordsToWorld(canvas: HTMLCanvasElement, x: number, y: number){
+    const rect = canvas.getBoundingClientRect();
+    return {x: (x - rect.left) / canvas.width * 2 - 1, y: 1 - (y - rect.top) / canvas.height * 2};
+}
+
 export const Canvas: FC<Props> = (props) => {
     const {width, height} = props;
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const glRef = useRef<WebGL2RenderingContext | null>(null);
+    const tunnelsRef = useRef<Tunnels | null>(null);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -20,17 +25,23 @@ export const Canvas: FC<Props> = (props) => {
                 console.error('WebGL2 not supported');
                 return;
             }
+            let tunnels = tunnelsRef.current;
+            if (!tunnels){
+                tunnels = new Tunnels(gl);
+                tunnelsRef.current = tunnels;
+            }
 
-            glRef.current = gl;
+            gl.viewport(0, 0, width, height);
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-            // canvas.addEventListener("mousedown", console.log)
             // canvas.addEventListener("mouseup", console.log)
             // canvas.addEventListener("mousemove", console.log)
-            const tunnels = new Tunnels(gl);
+            canvas.addEventListener("mousedown", ev => {
+                const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
+                tunnels.addTunnel(pos.x, pos.y, 0, 0);
+            });
 
-            const renderFrame = (time: number) => {
-                gl.clearColor(Math.sin(time / 1000) * 0.5 + 1, 0, 0, 1);
+            const renderFrame = () => {
                 gl.clear(gl.COLOR_BUFFER_BIT);
 
                 tunnels.draw();
@@ -45,14 +56,14 @@ export const Canvas: FC<Props> = (props) => {
 
             requestAnimationFrame(renderFrame);
         }
-    }, []);
+    }, [width, height]);
     return (
         <canvas ref={canvasRef}
                 width={width}
                 height={height}
                 style={{
-                    width: "100%",
-                    height: "100%",
+                    width: width,
+                    height: height,
                 }}>
         </canvas>
     )
