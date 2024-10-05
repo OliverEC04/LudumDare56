@@ -69,8 +69,8 @@ export class Tunnels{
     }
 
     public beginPlacement(x: number, y: number, size: number = 0.01){
-        this.placementTunnel[0] = x;
-        this.placementTunnel[1] = y;
+        this.placementTunnel[0] = Math.round(x * 10) / 10;
+        this.placementTunnel[1] = Math.round(y * 10) / 10;
         this.placementTunnel[4] = size;
         this.placementTunnel[5] = 0.4;
         this.placementTunnel[6] = 0.4;
@@ -79,8 +79,8 @@ export class Tunnels{
         this.instanceBuffer.setSubData(new Float32Array(this.placementTunnel), 0);
     }
     public placementUpdate(x: number, y: number){
-        this.placementTunnel[2] = x;
-        this.placementTunnel[3] = y;
+        this.placementTunnel[2] = Math.round(x * 10) / 10;
+        this.placementTunnel[3] = Math.round(y * 10) / 10;
         this.instanceBuffer.setSubData(new Float32Array(this.placementTunnel), 0);
     }
 
