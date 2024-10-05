@@ -1,4 +1,4 @@
-﻿import {Button, SxProps} from '@mui/material';
+﻿import {Box, Button, SxProps} from '@mui/material';
 import {FC} from 'react';
 
 interface Props {
@@ -11,7 +11,7 @@ export const BottomBarButton: FC<Props> = (props) => {
 
 	return (
 		<Button sx={styles.button} aria-label={label}>
-			<img src={icon} alt={label} style={{display: 'inline-block'}}/>
+			<Box component="img" src={icon} alt={label} sx={styles.img}/>
 		</Button>
 	);
 };
@@ -20,7 +20,9 @@ const styles: { [key: string]: SxProps } = {
 	button: {
 		width: 80,
 		height: 80,
-		display: 'flex',
-		padding: 1,
+	},
+	img: {
+		maxWidth: '100%',
+		maxHeight: '100%',
 	},
 };
