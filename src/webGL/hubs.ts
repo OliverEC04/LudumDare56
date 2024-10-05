@@ -1,6 +1,7 @@
 import {VertexArray} from "./vertexArray.ts";
 import {Shader} from "./shader.ts";
 import {Buffer} from "./buffer.ts";
+import {Hub, HubType} from "../models/hub.ts";
 
 const vertexSource = `
     attribute vec2 aLocalPos;
@@ -9,10 +10,13 @@ const vertexSource = `
     attribute vec4 aColor;
     
     varying vec4 vColor;
+    varying vec2 vPos;
     
     void main(){
         gl_Position = vec4(aLocalPos * aSize + aGlobalPos, 0, 1);
         vColor = aColor;
+        
+        vPos = aLocalPos * 2.0;
     }
 `;
 
@@ -20,9 +24,10 @@ const fragmentSource = `
     precision mediump float;
 
     varying vec4 vColor;
+    varying vec2 vPos;
 
     void main(){
-        gl_FragColor = vColor;
+        gl_FragColor = vColor * step(length(vPos), 1.0);
     }
 `;
 
@@ -31,7 +36,7 @@ export class Hubs {
     private readonly vao: VertexArray;
     private readonly shader: Shader;
     private readonly instanceBuffer: Buffer;
-    private readonly instances: Array<number>;
+    private instances: Array<number>;
 
     constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
@@ -56,11 +61,53 @@ export class Hubs {
         this.vao.addAttribute(this.instanceBuffer, "aGlobalPos", 2, this.gl.FLOAT, 28, 0, 1);
         this.vao.addAttribute(this.instanceBuffer, "aSize", 1, this.gl.FLOAT, 28, 8, 1);
         this.vao.addAttribute(this.instanceBuffer, "aColor", 4, this.gl.FLOAT, 28, 12, 1);
+
+        this.setHubs([]);
     }
 
-    public addHub(x: number, y: number, size: number = 0.05){
-        this.instances.push(x, y, size, 1, 1, 1, 1);
-        this.instanceBuffer.setData(new Float32Array(this.instances))
+    public setHubs(hubs: Hub[]){
+        this.instances = [];
+        for (const hub of hubs){
+            const x = hub.x;
+            const y = hub.y;
+            let size = hub.size;
+            let r = 0, g = 0, b = 0;
+            switch (hub.type){
+                case HubType.none:
+                    size = 0.02;
+                    r = 0.8;
+                    g = 0.4;
+                    b = 0.1;
+                    break;
+                case HubType.food:
+                    size *= 0.01;
+                    r = 0.5;
+                    g = 0.8;
+                    b = 0.5;
+                    break;
+                case HubType.mud:
+                    size *= 0.01;
+                    r = 0.8;
+                    g = 0.4;
+                    b = 0.1;
+                    break;
+                case HubType.feces:
+                    size *= 0.01;
+                    r = 0.8;
+                    g = 0.4;
+                    b = 0.1;
+                    break;
+                case HubType.home:
+                    size *= 0.01;
+                    r = 1;
+                    g = 1;
+                    b = 1;
+                    break;
+
+            }
+            this.instances.push(x, y, size, r, g, b, 1);
+        }
+        this.instanceBuffer.setData(new Float32Array(this.instances), this.gl.STATIC_DRAW);
     }
 
     public draw(){

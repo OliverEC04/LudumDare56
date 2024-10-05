@@ -1,4 +1,4 @@
-﻿import {Node} from "./node.ts";
+﻿import {Hub} from "./hub.ts";
 
 export enum TunnelType {
     dug,
@@ -6,27 +6,24 @@ export enum TunnelType {
     feces
 }
 
-export class Tunnel {
-    begin: Node;
-    end: Node;
-    damage: number[];
-    size: number;
-    type: TunnelType;
-    enabled: boolean;
+export type Placement = { hub: number, y: number, x: number};
 
-    constructor(
-        begin: Node,
-        end: Node,
-        damage: number[],
-        size: number,
-        type: TunnelType,
-        enabled: boolean
-    ) {
-        this.begin = begin;
-        this.end = end;
-        this.damage = damage;
-        this.size = size;
-        this.type = type;
-        this.enabled = enabled;
+export type Tunnel = {
+    id: number,
+    begin: Hub,
+    end: Hub,
+    damage: number[],
+    type: TunnelType,
+    enabled: boolean,
+}
+
+export function createTunnel(id: number, begin: Hub, end: Hub, damage: number[], type: TunnelType): Tunnel{
+    return {
+        id: id,
+        begin: begin,
+        end: end,
+        damage: damage,
+        type: type,
+        enabled: true,
     }
 }
