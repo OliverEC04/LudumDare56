@@ -11,6 +11,11 @@ export class Buffer{
         this.target = target;
     }
 
+    public setSubData(data: BufferSource, offset: number){
+        this.bind();
+        this.gl.bufferSubData(this.target, offset, data);
+    }
+
     public setData(data: BufferSource, usage: GLenum = this.gl.STATIC_DRAW) {
         this.bind();
         this.gl.bufferData(this.target, data, usage);
