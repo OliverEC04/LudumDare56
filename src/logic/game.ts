@@ -7,9 +7,6 @@ export class Game extends EventTarget {
 	home: Hub;
 	termites: number;
 
-	private readonly addedTunnel = new Event('addedTunnel');
-	private readonly addedHub = new Event('addedHub');
-
 	constructor() {
 		super();
 		this.hubs = [];
@@ -23,13 +20,20 @@ export class Game extends EventTarget {
 
 		this.addTunnel(home, none, TunnelType.dug);
 		this.addTunnel(none, food, TunnelType.dug);
+
+		requestAnimationFrame(this.onTick.bind(this));
+	}
+
+	private onTick(time: number){
+		super.dispatchEvent(new CustomEvent("tick", {detail: {"time": time}}));
+		requestAnimationFrame(this.onTick.bind(this));
 	}
 
 	public addTunnel(begin: Hub, end: Hub, type: TunnelType): Tunnel {
 		const tunnel = new Tunnel(begin, end, type);
 		this.tunnels.push(tunnel);
 
-		super.dispatchEvent(this.addedTunnel);
+		super.dispatchEvent(new CustomEvent("addedTunnel", {detail: {"tunnel": tunnel, "allTunnels": this.tunnels}}));
 		return tunnel;
 	}
 
@@ -37,7 +41,7 @@ export class Game extends EventTarget {
 		const hub = new Hub(x, y, type, size, assignedTermites);
 		this.hubs.push(hub);
 
-		super.dispatchEvent(this.addedHub);
+		super.dispatchEvent(new CustomEvent("addedHub", {detail: {"hub": hub, "allHubs": this.hubs}}));
 		return hub;
 	}
 }
