@@ -37,7 +37,10 @@ export class Game extends EventTarget {
 		requestAnimationFrame(this.onTick.bind(this));
 	}
 
-	public addTunnel(begin: Hub, end: Hub, type: TunnelType): Tunnel {
+	public addTunnel(begin: Hub, end: Hub, type: TunnelType): Tunnel | null {
+		if (begin == end){
+			return null;
+		}
 		const tunnel = new Tunnel(begin, end, type);
 		this.tunnels.push(tunnel);
 
