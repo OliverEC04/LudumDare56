@@ -34,11 +34,18 @@ export const Canvas: FC<Props> = (props) => {
             gl.viewport(0, 0, width, height);
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-            // canvas.addEventListener("mouseup", console.log)
-            // canvas.addEventListener("mousemove", console.log)
+            canvas.addEventListener("mouseup", () => {
+                tunnels?.placeTunnel();
+                tunnels?.placementTunnelSize(0);
+            });
             canvas.addEventListener("mousedown", ev => {
                 const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
-                tunnels.addTunnel(pos.x, pos.y, 0, 0);
+                tunnels?.placementTunnelBegin(pos.x, pos.y);
+                tunnels?.placementTunnelSize();
+            });
+            canvas.addEventListener("mousemove", ev => {
+                const pos = convertMouseCoordsToWorld(canvas, ev.clientX, ev.clientY);
+                tunnels?.placementTunnelEnd(pos.x, pos.y)
             });
 
             const renderFrame = () => {
