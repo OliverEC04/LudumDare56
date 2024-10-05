@@ -4,13 +4,15 @@ import {FC} from 'react';
 interface Props {
 	label: string;
 	icon: string;
+
+	onclick(): void;
 }
 
 export const BottomBarButton: FC<Props> = (props) => {
-	const {label, icon} = props;
+	const {label, icon, onclick} = props;
 
 	return (
-		<Button sx={styles.button} aria-label={label}>
+		<Button sx={styles.button} aria-label={label} onClick={onclick}>
 			<Box component="img" src={icon} alt={label} sx={styles.img}/>
 		</Button>
 	);

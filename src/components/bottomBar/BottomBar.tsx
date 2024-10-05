@@ -1,12 +1,15 @@
 ﻿import {Paper, SxProps} from '@mui/material';
 import {BottomBarButton} from './BottomBarButton.tsx';
 import testIcon from '../../assets/testIcon.png';
+import {useAppDispatch} from '../../state/hooks.ts';
 
 export const BottomBar = () => {
+	const dispatch = useAppDispatch();
+	
 	return (
 		<Paper sx={styles.container}>
-			<BottomBarButton label="btn1" icon={testIcon}/>
-			<BottomBarButton label="btn2" icon={testIcon}/>
+			<BottomBarButton label="btn1" icon={testIcon} onclick={console.log}/>
+			<BottomBarButton label="btn2" icon={testIcon} onclick={console.log}/>
 		</Paper>
 	);
 };
