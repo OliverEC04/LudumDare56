@@ -8,28 +8,22 @@ export enum TunnelType {
 
 export type Placement = { hub: number, y: number, x: number};
 
-export class Tunnel {
-    public id: number;
-    public begin: Hub;
-    public end: Hub;
-    public damage: number[];
-    public type: TunnelType;
-    public enabled: boolean;
+export type Tunnel = {
+    id: number,
+    begin: Hub,
+    end: Hub,
+    damage: number[],
+    type: TunnelType,
+    enabled: boolean,
+}
 
-    constructor(
-        id: number,
-        begin: Hub,
-        end: Hub,
-        damage: number[],
-        type: TunnelType
-    ) {
-        this.id = id;
-        this.begin = begin;
-        this.end = end;
-        this.damage = damage;
-        this.type = type;
-        this.enabled = true;
-        this.begin.tunnels.push(this.id);
-        this.end.tunnels.push(this.id);
+export function createTunnel(id: number, begin: Hub, end: Hub, damage: number[], type: TunnelType): Tunnel{
+    return {
+        id: id,
+        begin: begin,
+        end: end,
+        damage: damage,
+        type: type,
+        enabled: true,
     }
 }
