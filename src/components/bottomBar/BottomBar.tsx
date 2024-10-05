@@ -1,12 +1,29 @@
 ﻿import {Paper, SxProps} from '@mui/material';
 import {BottomBarButton} from './BottomBarButton.tsx';
 import testIcon from '../../assets/testIcon.png';
+import {Game, Tool} from '../../logic/game.ts';
+import {FC, useCallback} from 'react';
 
-export const BottomBar = () => {
+interface Props {
+	game: Game;
+}
+
+export const BottomBar: FC<Props> = (props) => {
+	const {game} = props;
+
+	const setTool = useCallback((tool: Tool) => {
+		if (game.selectedTool === tool) {
+			game.selectTool(Tool.None);
+			return;
+		}
+
+		game.selectTool(tool);
+	}, [game]);
+
 	return (
 		<Paper sx={styles.container}>
-			<BottomBarButton label="btn1" icon={testIcon} onclick={console.log}/>
-			<BottomBarButton label="btn2" icon={testIcon} onclick={console.log}/>
+			<BottomBarButton label="digTunnel" icon={testIcon} onclick={() => setTool(Tool.DigTunnel)}/>
+			<BottomBarButton label="upgradeTunnel" icon={testIcon} onclick={() => setTool(Tool.UpgradeTunnel)}/>
 		</Paper>
 	);
 };

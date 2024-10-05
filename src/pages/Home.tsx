@@ -14,7 +14,7 @@ export const Home = () => {
 		<Box sx={styles.container}>
 			<TopBar game={game}/>
 			<Canvas width={windowWidth} height={windowHeight} game={game}></Canvas>
-			<BottomBar/>
+			<BottomBar game={game}/>
 		</Box>
 	);
 };
