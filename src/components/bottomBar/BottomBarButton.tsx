@@ -1,9 +1,16 @@
 ﻿import {Button} from '@mui/material';
+import {FC} from 'react';
 
-export const BottomBarButton = () => {
+interface Props {
+	label: string;
+}
+
+export const BottomBarButton: FC<Props> = (props) => {
+	const {label} = props;
+
 	return (
 		<Button>
-			Button
+			{label}
 		</Button>
 	);
 };
