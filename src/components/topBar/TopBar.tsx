@@ -1,11 +1,9 @@
 ﻿import {Box, SxProps} from '@mui/material';
-import {BottomBarButton} from './BottomBarButton.tsx';
 
-export const BottomBar = () => {
+export const TopBar = () => {
 	return (
 		<Box sx={styles.container}>
-			<BottomBarButton label="btn1"/>
-			<BottomBarButton label="btn2"/>
+			TopBar
 		</Box>
 	);
 };
@@ -13,6 +11,5 @@ export const BottomBar = () => {
 const styles: { [key: string]: SxProps } = {
 	container: {
 		position: 'absolute',
-		bottom: 0,
 	},
 };
