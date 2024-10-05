@@ -1,10 +1,10 @@
-﻿import {Box, SxProps} from '@mui/material';
+﻿import {Paper, SxProps} from '@mui/material';
 
 export const TopBar = () => {
 	return (
-		<Box sx={styles.container}>
+		<Paper sx={styles.container}>
 			TopBar
-		</Box>
+		</Paper>
 	);
 };
 
