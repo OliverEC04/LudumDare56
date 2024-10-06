@@ -11,7 +11,7 @@ export const TopBarTile = <T, >({icon, text, label, value}: Props<T>) => {
 
 	const iconElem = icon && (<Box component="img" src={icon} sx={styles.img}/>);
 	const textElem = text && (<Box>{text}:</Box>);
-	// TODO: Conditional rendering
+
 	return (
 		<Box aria-label={label} sx={styles.container}>
 			{iconElem ?? ''}
