@@ -26,16 +26,10 @@ export class Game extends EventTarget {
 		this.selectedTool = Tool.None;
 
 		this.home = this.addHub(0, 0, HubType.home, 10);
-		const food = this.addHub(1, 1, HubType.food, 10);
-		const none = this.addHub(0.25, 0.5, HubType.none, 0);
-
-		this.addTunnel(this.home, none, TunnelType.dug);
-		this.addTunnel(none, food, TunnelType.dug);
 
 		requestAnimationFrame(this.onTick.bind(this));
 
 		this.searchQueue = new TunnelQueue();
-		this.resetSearch();
 
 		setTimeout(this.resetSearch.bind(this), 10000);
 	}
@@ -46,13 +40,14 @@ export class Game extends EventTarget {
 		}
 
 		if (this.assignedTermites >= this.termiteCount){
+			console.log(this);
 			return;
 		}
 
 		const nextTunnel = this.searchQueue.peekTunnel();
 		const nextHub = nextTunnel.end;
 		if (nextHub.type === HubType.food || nextHub.type === HubType.mud || nextHub.type === HubType.feces){
-			const result = this.tryAssignTermites(this.termiteCount - this.assignedTermites, nextTunnel);
+			const result = this.estimateRoute(nextTunnel);
 
 			if (result){
 				const unusedThroughput = (this.termiteCount - this.assignedTermites) / result.length;
@@ -68,37 +63,32 @@ export class Game extends EventTarget {
 
 		const length = this.searchQueue.peekLength();
 		this.searchQueue.dequeue();
-		const firstVisit = nextHub.bestVisit.length === 0;
-		nextHub.bestVisit.enqueue(length, nextTunnel);
-		if (firstVisit){
+		if (!nextHub.bestVisit){
+			nextHub.bestVisit = nextTunnel;
 			this.queueTunnels(nextTunnel.end, length);
 		}
 		this.assignMissingTermites();
 	}
 
-	private tryAssignTermites(newTermiteCount: number, endTunnel: Tunnel): { length: number, minThroughput: number } | null {
+	private estimateRoute(endTunnel: Tunnel): { length: number, minThroughput: number } | null {
 		const hub = endTunnel.begin;
 
 		// Verify this tunnel.
-		const tunnelMissingCapacity = endTunnel.capacity - endTunnel.assignedTermites;
-		newTermiteCount = Math.min(newTermiteCount, tunnelMissingCapacity);
-		if (newTermiteCount <= 0){
+		const tunnelMissingThroughput = endTunnel.type - endTunnel.throughput;
+		if (tunnelMissingThroughput <= 0){
 			return null;
 		}
 
-		if (hub.type === HubType.home){
-			return { length: endTunnel.length, minThroughput: endTunnel.throughput };
+		const nextTunnel = hub.bestVisit;
+		if (hub.type === HubType.home || !nextTunnel){
+			return { length: endTunnel.length, minThroughput: tunnelMissingThroughput };
 		}
 
-		while (hub.bestVisit.length > 0){
-			const nextTunnel = hub.bestVisit.peekTunnel();
-			const result = this.tryAssignTermites(newTermiteCount, nextTunnel)
-			if (result){
-				return {length: result.length + endTunnel.length, minThroughput: Math.min(result.minThroughput, endTunnel.throughput) };
-			}
-			// Route doesn't work, try the next route.
-			hub.bestVisit.dequeue();
+		const result = this.estimateRoute(nextTunnel)
+		if (result){
+			return {length: result.length + endTunnel.length, minThroughput: Math.min(result.minThroughput, tunnelMissingThroughput) };
 		}
+
 		return null;
 	}
 
@@ -106,23 +96,25 @@ export class Game extends EventTarget {
 		// TODO: Maybe move the while loop from TryAssignTermites down here. Removing objects here if their throughput is full. Then we dont need the logic to check for full throughput's in the other function.
 		tunnel.throughput += throughput;
 		const hub = tunnel.begin;
-		if (hub.type === HubType.home){
+		const nextTunnel = hub.bestVisit;
+		if (hub.type === HubType.home || !nextTunnel){
 			return;
 		}
-		this.placeTermites(throughput, hub.bestVisit.peekTunnel());
+		this.placeTermites(throughput, nextTunnel);
 	}
 
 	private queueTunnels(hub: Hub, accLength: number){
 		for (const tunnel of hub.tunnels) {
-			tunnel.ensureBeginHub(hub);
-			this.searchQueue.enqueue(accLength + tunnel.length, tunnel);
+			if (!tunnel.end.bestVisit) {
+				tunnel.ensureBeginHub(hub);
+				this.searchQueue.enqueue(accLength + tunnel.length, tunnel);
+			}
 		}
 	}
 
 	public resetSearch(){
 		for (const hub of this.hubs) {
-			hub.assignedTermites = 0;
-			hub.bestVisit.clear();
+			hub.bestVisit = null;
 		}
 		for (const tunnel of this.tunnels) {
 			tunnel.throughput = 0;
@@ -146,6 +138,8 @@ export class Game extends EventTarget {
 		this.tunnels.push(tunnel);
 
 		super.dispatchEvent(new CustomEvent("addedTunnel", {detail: {"tunnel": tunnel, "allTunnels": this.tunnels}}));
+
+		this.resetSearch();
 		return tunnel;
 	}
 

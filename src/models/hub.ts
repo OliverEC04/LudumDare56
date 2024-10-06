@@ -1,5 +1,4 @@
 ﻿import {Tunnel} from './tunnel.ts';
-import {TunnelQueue} from "./TunnelQueue.ts";
 
 export enum HubType {
 	none,
@@ -14,9 +13,8 @@ export class Hub {
 	y: number;
 	type: HubType;
 	size: number;
-	assignedTermites: number;
 	tunnels: Tunnel[];
-	bestVisit: TunnelQueue;
+	bestVisit: Tunnel | null;
 
 	constructor(
 		x: number,
@@ -28,9 +26,8 @@ export class Hub {
 		this.y = y;
 		this.type = type;
 		this.size = size;
-		this.assignedTermites = 0;
 		this.tunnels = [];
-		this.bestVisit = new TunnelQueue();
+		this.bestVisit = null;
 	}
 
 	public addTunnel(tunnel: Tunnel) {

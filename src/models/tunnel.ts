@@ -23,11 +23,11 @@ export class Tunnel {
 	) {
 		this._begin = begin;
 		this._end = end;
-		this._length = Math.pow(this._begin.x - this._end.x, 2) * Math.pow(this._begin.y - this._end.y, 2);
+		this._length = Math.sqrt(Math.pow(this._begin.x - this._end.x, 2) + Math.pow(this._begin.y - this._end.y, 2));
 		this._type = type;
 		this._throughput = 0;
 		this._assignedTermites = 0;
-		this._capacity = length * this._type;
+		this._capacity = this._length * this._type;
 
 		this._begin.addTunnel(this);
 		this._end.addTunnel(this);
