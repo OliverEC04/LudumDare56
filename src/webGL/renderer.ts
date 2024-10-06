@@ -17,7 +17,7 @@ export class Renderer {
 
 	constructor(canvas: HTMLCanvasElement, game: Game) {
 		this.canvas = canvas;
-		const gl = this.canvas.getContext('webgl2');
+		const gl = this.canvas.getContext('webgl2', { antialias: true });
 		if (!gl) {
 			throw Error('WebGL2 not supported.');
 		}
@@ -60,7 +60,7 @@ export class Renderer {
 	private tick() {
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
-		this.tunnels.draw();
+		this.tunnels.draw(this.game.time);
 		this.hubs.draw();
 
 		const error = this.gl.getError();
@@ -197,7 +197,7 @@ export class Renderer {
                     if (!hub) {
                         hub = this.game.addHub(placement.x, placement.y, HubType.food, Math.random() * 10);
                     }
-                    this.game.addTunnel(placement.hub, hub, TunnelType.dug);
+                    this.game.addTunnel(placement.hub, hub, TunnelType.mud);
                 }
                 break;
             }
