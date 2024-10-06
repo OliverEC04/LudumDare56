@@ -1,6 +1,7 @@
 ﻿import {Tunnel, TunnelType} from '../models/tunnel.ts';
 import {Hub, HubType} from '../models/hub.ts';
 import {TunnelQueue} from '../models/TunnelQueue.ts';
+import {Inventory} from '../models/inventory.ts';
 
 export enum Tool {
 	None,
@@ -17,7 +18,9 @@ export class Game extends EventTarget {
 	scoutRatio: number;
 	foragerRatio: number;
 	tunnelerRatio: number;
+	assignedTermiteMap: Map<HubType, number> = new Map<HubType, number>();
 	selectedTool: Tool;
+	readonly inventory: Inventory;
 	readonly searchQueue: TunnelQueue;
 
 	constructor() {
@@ -29,7 +32,9 @@ export class Game extends EventTarget {
 		this.scoutRatio = 1 / 3;
 		this.foragerRatio = 1 / 3;
 		this.tunnelerRatio = 1 / 3;
+		this.selectedTool = 0;
 		this.selectedTool = Tool.None;
+		this.inventory = new Inventory(0, 0, 0);
 
 		this.home = this.addHub(0, 0, HubType.home, 10);
 
@@ -59,7 +64,14 @@ export class Game extends EventTarget {
 				const unusedThroughput = (this.termiteCount - this.assignedTermites) / result.length;
 				const usedThroughput = Math.min(unusedThroughput, result.minThroughput);
 				this.placeTermites(usedThroughput, nextTunnel);
-				this.assignedTermites += usedThroughput * result.length;
+				const termites = usedThroughput * result.length;
+				this.assignedTermites += termites;
+
+				const existingTermites = this.assignedTermiteMap.get(nextHub.type);
+				if (!existingTermites) {
+					throw Error('How did we end up here?');
+				}
+				this.assignedTermiteMap.set(nextHub.type, existingTermites + termites);
 			}
 		}
 
@@ -84,6 +96,9 @@ export class Game extends EventTarget {
 			tunnel.throughput = 0;
 		}
 		this.assignedTermites = 0;
+		this.assignedTermiteMap.set(HubType.food, 0);
+		this.assignedTermiteMap.set(HubType.mud, 0);
+		this.assignedTermiteMap.set(HubType.feces, 0);
 		this.searchQueue.clear();
 		this.queueTunnels(this.home, 0);
 		this.assignMissingTermites();
@@ -157,6 +172,12 @@ export class Game extends EventTarget {
 				this.searchQueue.enqueue(accLength + tunnel.length, tunnel);
 			}
 		}
+	}
+
+	private updateInventory() {
+		this.inventory.food += this.assignedTermiteMap.get(HubType.food) ?? 0;
+		this.inventory.mud += this.assignedTermiteMap.get(HubType.mud) ?? 0;
+		this.inventory.feces += this.assignedTermiteMap.get(HubType.feces) ?? 0;
 	}
 
 	private onTick(time: number) {
