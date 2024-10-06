@@ -12,13 +12,15 @@ const vertexSource = `
     attribute float aSize;
     attribute vec4 aColor;
     
+    uniform vec2 uCameraPos;
+    
     varying vec4 vColor;
     
     void main(){
         vec2 point = step(aPoint, 0.5) * aBegin + step(0.5, aPoint) * aEnd;
         vec2 lineDir = aEnd - aBegin;
         vec2 perpVec = vec2(-lineDir.y, lineDir.x) * (step(aOffset, 0.0) * 2.0 - 1.0);
-        gl_Position = vec4(point + normalize(perpVec) * aSize, 0, 1);
+        gl_Position = vec4(point + normalize(perpVec) * aSize + uCameraPos, 0, 1);
         vColor = aColor;
     }
 `;
@@ -41,10 +43,12 @@ export class Tunnels {
 	private startHub: Hub | null = null;
 	private readonly placementTunnel: Float32Array;
 	private instances: Array<number>;
+	private readonly cameraPosUniformLocation: WebGLUniformLocation | null;
 
 	constructor(gl: WebGL2RenderingContext) {
 		this.gl = gl;
 		this.shader = new Shader(this.gl, vertexSource, fragmentSource);
+		this.cameraPosUniformLocation = this.shader.getUniformLocation("uCameraPos");
 
 		this.vao = new VertexArray(gl, this.shader);
 
@@ -70,6 +74,11 @@ export class Tunnels {
 		this.vao.addAttribute(this.instanceBuffer, 'aColor', 4, this.gl.FLOAT, 36, 20, 1);
 
 		this.setTunnels([]);
+	}
+
+	public updateCamera(cameraX: number, cameraY: number){
+		this.shader.bind();
+		this.gl.uniform2f(this.cameraPosUniformLocation, cameraX, cameraY);
 	}
 
 	public placementBegin(hub: Hub, size: number = 0.01) {

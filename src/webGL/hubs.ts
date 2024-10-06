@@ -9,11 +9,13 @@ const vertexSource = `
     attribute float aSize;
     attribute vec4 aColor;
     
+    uniform vec2 uCameraPos;
+    
     varying vec4 vColor;
     varying vec2 vPos;
     
     void main(){
-        gl_Position = vec4(aLocalPos * aSize + aGlobalPos, 0, 1);
+        gl_Position = vec4(aLocalPos * aSize + aGlobalPos + uCameraPos, 0, 1);
         vColor = aColor;
         
         vPos = aLocalPos * 2.0;
@@ -37,10 +39,12 @@ export class Hubs {
     private readonly shader: Shader;
     private readonly instanceBuffer: Buffer;
     private instances: Array<number>;
+    private readonly cameraPosUniformLocation: WebGLUniformLocation | null;
 
     constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
         this.shader = new Shader(this.gl, vertexSource, fragmentSource);
+        this.cameraPosUniformLocation = this.shader.getUniformLocation("uCameraPos");
 
         this.vao = new VertexArray(gl, this.shader);
 
@@ -63,6 +67,11 @@ export class Hubs {
         this.vao.addAttribute(this.instanceBuffer, "aColor", 4, this.gl.FLOAT, 28, 12, 1);
 
         this.setHubs([]);
+    }
+
+    public updateCamera(cameraX: number, cameraY: number){
+        this.shader.bind();
+        this.gl.uniform2f(this.cameraPosUniformLocation, cameraX, cameraY);
     }
 
     public setHubs(hubs: Hub[]){
