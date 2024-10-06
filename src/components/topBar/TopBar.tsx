@@ -12,7 +12,7 @@ export const TopBar: FC<Props> = (props) => {
 
 	return (
 		<Paper sx={styles.container}>
-			<TopBarTile label="Termites" value={game.termites}/>
+			<TopBarTile label="Termites" value={game.termiteCount}/>
 		</Paper>
 	);
 };
