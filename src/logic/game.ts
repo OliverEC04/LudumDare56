@@ -16,6 +16,7 @@ export class Game extends EventTarget {
 	termiteCount: number;
 	selectedTool: Tool;
 	readonly searchQueue: TunnelQueue;
+	time: number = 0;
 
 	constructor() {
 		super();
@@ -126,7 +127,8 @@ export class Game extends EventTarget {
 	}
 
 	private onTick(time: number){
-		super.dispatchEvent(new CustomEvent("tick", {detail: {"time": time}}));
+		this.time = time / 1000;
+		super.dispatchEvent(new CustomEvent("tick"));
 		requestAnimationFrame(this.onTick.bind(this));
 	}
 

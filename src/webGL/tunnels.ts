@@ -14,24 +14,41 @@ const vertexSource = `
     
     uniform vec2 uCameraPos;
     
+    varying float vLengthOffset;
+    varying float vScaledLocalY;
     varying vec4 vColor;
     
     void main(){
         vec2 point = step(aPoint, 0.5) * aBegin + step(0.5, aPoint) * aEnd;
         vec2 lineDir = aEnd - aBegin;
         vec2 perpVec = vec2(-lineDir.y, lineDir.x) * (step(aOffset, 0.0) * 2.0 - 1.0);
-        gl_Position = vec4(point + normalize(perpVec) * aSize + uCameraPos, 0, 1);
+        gl_Position = vec4(point + normalize(perpVec) * aSize / 150.0 + uCameraPos, 0, 1);
+        
+        vScaledLocalY = aOffset * aSize / 2.0 + 0.5;
+        vLengthOffset = aPoint * length(lineDir);
         vColor = aColor;
     }
 `;
 
 const fragmentSource = `
+	#define PI2 6.28318530718
+	#define PI 3.14159265359
     precision mediump float;
 
+	uniform float uTime;
+
+    varying float vLengthOffset;
+    varying float vScaledLocalY;
     varying vec4 vColor;
 
     void main(){
-        gl_FragColor = vColor;
+    	vec4 color = vColor;
+    	float lane = step(0.8, abs(sin(vScaledLocalY * PI2)));
+    	float direction = step(0.5, vScaledLocalY) * 2.0 - 1.0;
+    	float offset = direction * uTime * 2.0;
+    	float gapSize = vLengthOffset * 50.0 + offset;
+    	float gaps = step(0.5, fract(gapSize));
+        gl_FragColor = color * (1.0 - lane * gaps);
     }
 `;
 
@@ -44,11 +61,13 @@ export class Tunnels {
 	private readonly placementTunnel: Float32Array;
 	private instances: Array<number>;
 	private readonly cameraPosUniformLocation: WebGLUniformLocation | null;
+	private readonly timeUniformLocation: WebGLUniformLocation | null;
 
 	constructor(gl: WebGL2RenderingContext) {
 		this.gl = gl;
 		this.shader = new Shader(this.gl, vertexSource, fragmentSource);
 		this.cameraPosUniformLocation = this.shader.getUniformLocation("uCameraPos");
+		this.timeUniformLocation = this.shader.getUniformLocation("uTime");
 
 		this.vao = new VertexArray(gl, this.shader);
 
@@ -81,7 +100,7 @@ export class Tunnels {
 		this.gl.uniform2f(this.cameraPosUniformLocation, cameraX, cameraY);
 	}
 
-	public placementBegin(hub: Hub, size: number = 0.01) {
+	public placementBegin(hub: Hub, size: number = 1) {
 		this.startHub = hub;
 		this.placementTunnel[0] = hub.x;
 		this.placementTunnel[1] = hub.y;
@@ -137,23 +156,20 @@ export class Tunnels {
 			const beginY = tunnel.begin.y;
 			const endX = tunnel.end.x;
 			const endY = tunnel.end.y;
-			let size = 0;
+			const size = tunnel.type;
 			let r = 0, g = 0, b = 0;
 			switch (tunnel.type) {
 				case TunnelType.dug:
-					size = 0.01;
 					r = 0.8;
 					g = 0.4;
 					b = 0.1;
 					break;
 				case TunnelType.mud:
-					size = 0.02;
 					r = 0.7;
 					g = 0.4;
 					b = 0.1;
 					break;
 				case TunnelType.feces:
-					size = 0.03;
 					r = 0.6;
 					g = 0.3;
 					b = 0.1;
@@ -164,9 +180,10 @@ export class Tunnels {
 		this.instanceBuffer.setData(new Float32Array(this.instances), this.gl.DYNAMIC_DRAW);
 	}
 
-	public draw() {
+	public draw(time: number) {
 		this.vao.bind();
 		this.shader.bind();
+		this.gl.uniform1f(this.timeUniformLocation, time);
 		this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, 6, this.instances.length / this.placementTunnel.length);
 	}
 }
