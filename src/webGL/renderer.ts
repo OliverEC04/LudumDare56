@@ -141,20 +141,20 @@ export class Renderer {
                 const pos = this.convertMouseCoordsToWorld(ev.clientX, ev.clientY);
                 const hub = this.nearestHub(pos.x, pos.y, this.hubSnap);
                 if (hub) {
-                    this.tunnels?.placementUpdate(hub.x, hub.y);
+                    this.tunnels?.placementUpdate(hub.x, hub.y, hub.tunnels.length == 0);
                 } else {
-                    this.tunnels?.placementUpdate(pos.x, pos.y);
+                    this.tunnels?.placementUpdate(pos.x, pos.y, true);
                 }
                 break;
             }
             case Tool.UpgradeTunnel: {
-                const pos = this.convertMouseCoordsToWorld(ev.clientX, ev.clientY);
-                const hub = this.nearestHub(pos.x, pos.y, this.hubSnap);
-                if (hub) {
-                    this.tunnels?.placementUpdate(hub.x, hub.y);
-                } else {
-                    this.tunnels?.placementUpdate(pos.x, pos.y);
-                }
+				const pos = this.convertMouseCoordsToWorld(ev.clientX, ev.clientY);
+				const hub = this.nearestHub(pos.x, pos.y, this.hubSnap);
+				if (hub) {
+					this.tunnels?.placementUpdate(hub.x, hub.y, hub.tunnels.length == 0);
+				} else {
+					this.tunnels?.placementUpdate(pos.x, pos.y, true);
+				}
                 break;
             }
         }
@@ -176,8 +176,11 @@ export class Renderer {
 				const placement = this.tunnels?.placementEnd();
 				if (placement) {
 					let hub = this.nearestHub(pos.x, pos.y, this.hubSnap);
+					if (hub && hub.tunnels.length != 0){
+						return;
+					}
 					if (!hub) {
-						hub = this.game.addHub(placement.x, placement.y, HubType.none, 1, 0);
+						hub = this.game.addHub(placement.x, placement.y, HubType.none, 1);
 					}
 					this.game.addTunnel(placement.hub, hub, TunnelType.dug);
 				}
@@ -188,9 +191,11 @@ export class Renderer {
                 const placement = this.tunnels?.placementEnd();
                 if (placement) {
                     let hub = this.nearestHub(pos.x, pos.y, this.hubSnap);
+					if (hub && hub.tunnels.length != 0){
+						return;
+					}
                     if (!hub) {
-                        hub = this.game.addHub(placement.x, placement.y, HubType.food, Math.random() * 10, 0);
-                        console.log(hub);
+                        hub = this.game.addHub(placement.x, placement.y, HubType.food, Math.random() * 10);
                     }
                     this.game.addTunnel(placement.hub, hub, TunnelType.dug);
                 }

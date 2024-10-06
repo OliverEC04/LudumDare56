@@ -5,10 +5,10 @@ import {useWindowSize} from '../state/hooks/windowSize.tsx';
 import {TopBar} from '../components/topBar/TopBar.tsx';
 import {Game} from '../logic/game.ts';
 
+const game = new Game();
+
 export const Home = () => {
 	const {width: windowWidth, height: windowHeight} = useWindowSize();
-
-	const game = new Game();
 
 	return (
 		<Box sx={styles.container}>

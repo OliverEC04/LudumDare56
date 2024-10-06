@@ -93,9 +93,23 @@ export class Tunnels {
 		this.instanceBuffer.setSubData(new Float32Array(this.placementTunnel), 0);
 	}
 
-	public placementUpdate(x: number, y: number) {
+
+	public placementUpdate(x: number, y: number, enabled: boolean) {
 		this.placementTunnel[2] = x;
 		this.placementTunnel[3] = y;
+		if (enabled){
+			this.placementTunnel[5] = 0.4;
+			this.placementTunnel[6] = 0.4;
+			this.placementTunnel[7] = 0.4;
+			this.placementTunnel[8] = 1;
+		}
+		else {
+			this.placementTunnel[5] = 0.8;
+			this.placementTunnel[6] = 0.2;
+			this.placementTunnel[7] = 0.1;
+			this.placementTunnel[8] = 1;
+		}
+		this.instanceBuffer.setSubData(new Float32Array(this.placementTunnel), 0);
 		this.instanceBuffer.setSubData(new Float32Array(this.placementTunnel), 0);
 	}
 
